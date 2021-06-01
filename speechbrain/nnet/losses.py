@@ -53,6 +53,40 @@ def transducer_loss(
     )
 
 
+def torchaudio_transducer_loss(
+    log_probs, targets, input_lens, target_lens, blank_index, reduction="mean"
+):
+    """Transducer loss, see `speechbrain/nnet/loss/transducer_loss.py`.
+
+    Arguments
+    ---------
+    predictions : torch.Tensor
+        Predicted tensor, of shape [batch, maxT, maxU, num_labels].
+    targets : torch.Tensor
+        Target tensor, without any blanks, of shape [batch, target_len].
+    input_lens : torch.Tensor
+        Length of each utterance.
+    target_lens : torch.Tensor
+        Length of each target sequence.
+    blank_index : int
+        The location of the blank symbol among the label indices.
+    reduction : str
+        Specifies the reduction to apply to the output: 'mean' | 'batchmean' | 'sum'.
+    """
+    from torchaudio.prototype.rnnt_loss import rnnt_loss
+
+    input_lens = (input_lens * log_probs.shape[1]).int()
+    target_lens = (target_lens * targets.shape[1]).int()
+    return rnnt_loss(
+        logits=log_probs,
+        targets=targets,
+        logit_lengths=input_lens,
+        target_lengths=target_lens,
+        blank=blank_index,
+        reuse_logits_for_grads=False
+    )
+
+
 class PitWrapper(nn.Module):
     """
     Permutation Invariant Wrapper to allow Permutation Invariant Training
