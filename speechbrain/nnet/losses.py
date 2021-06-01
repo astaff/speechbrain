@@ -77,13 +77,14 @@ def torchaudio_transducer_loss(
 
     input_lens = (input_lens * log_probs.shape[1]).int()
     target_lens = (target_lens * targets.shape[1]).int()
+
     return rnnt_loss(
         logits=log_probs,
         targets=targets,
         logit_lengths=input_lens,
         target_lengths=target_lens,
         blank=blank_index,
-        reuse_logits_for_grads=False
+        fused_log_softmax=False
     )
 
 
