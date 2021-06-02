@@ -102,7 +102,8 @@ searcher: !new:speechbrain.decoders.transducer.TransducerBeamSearcher
     beam_size: 1
     nbest: 1
 
-compute_cost: !name:speechbrain.nnet.losses.transducer_loss
+# compute_cost: !name:speechbrain.nnet.losses.transducer_loss
+compute_cost: !name:speechbrain.nnet.losses.torchaudio_transducer_loss
     blank_index: !ref <blank_index>
 
 per_stats: !name:speechbrain.utils.metric_stats.ErrorRateStats
