@@ -25,12 +25,12 @@ train_log: !ref <output_folder>/train_log.txt
 pretrained_lm_tokenizer_path: speechbrain/asr-crdnn-rnnlm-librispeech
 
 # Data files
-data_folder: !PLACEHOLDER # e.g, /localscratch/LibriSpeech
-# If RIRS_NOISES dir exists in /localscratch/xxx_corpus/RIRS_NOISES
+data_folder: /home/ubuntu/LibriSpeech/LibriSpeech # e.g, /localscratch/LibriSpeech
+# If RIRS_NOISES dir exists in /localscratch/xxx_corp/us/RIRS_NOISES
 # then data_folder_rirs should be /localscratch/xxx_corpus
 # otherwise the dataset will automatically be downloaded
 data_folder_rirs: !ref <data_folder>
-train_splits: ["train-clean-100", "train-clean-360", "train-other-500"]
+train_splits: ["train-clean-100"]
 dev_splits: ["dev-clean"]
 test_splits: ["test-clean", "test-other"]
 train_csv: !ref <data_folder>/train.csv
@@ -92,6 +92,7 @@ dec_neurons: 1024
 output_neurons: 1000  # index(blank/eos/bos) = 0
 joint_dim: 1024
 blank_index: 0
+emb_size: 128
 
 # Decoding parameters
 beam_size: 4
@@ -155,6 +156,7 @@ enc: !new:speechbrain.lobes.models.CRDNN.CRDNN
 
 emb: !new:speechbrain.nnet.embedding.Embedding
    num_embeddings: !ref <output_neurons>
+   embedding_dim: !ref <emb_size>
    consider_as_one_hot: True
    blank_id: !ref <blank_index>
 
@@ -188,9 +190,17 @@ log_softmax: !new:speechbrain.nnet.activations.Softmax
 transducer_cost: !name:speechbrain.nnet.losses.transducer_loss
    blank_index: !ref <blank_index>
 
-lm_model: !new:recipes.LibriSpeech.LM.pretrained.pretrained.LM
-   hparams_file: !ref <lm_hparam_file>
-   save_folder: !ref <save_folder>
+# from https://huggingface.co/speechbrain/asr-crdnn-rnnlm-librispeech/blob/main/hyperparams.yaml
+lm_model: !new:speechbrain.lobes.models.RNNLM.RNNLM
+    output_neurons: !ref <output_neurons>
+    embedding_dim: !ref <emb_size>
+    activation: !name:torch.nn.LeakyReLU
+    dropout: 0.0
+    rnn_layers: 2
+    rnn_neurons: 2048
+    dnn_blocks: 1
+    dnn_neurons: 512
+
 
 # for MTL
 # update model if any HEAD module is added
