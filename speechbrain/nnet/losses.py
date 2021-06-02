@@ -78,14 +78,16 @@ def torchaudio_transducer_loss(
     input_lens = (input_lens * log_probs.shape[1]).int()
     target_lens = (target_lens * targets.shape[1]).int()
 
-    return rnnt_loss(
+    loss_value = rnnt_loss(
         logits=log_probs,
         targets=targets,
         logit_lengths=input_lens,
         target_lengths=target_lens,
         blank=blank_index,
-        fused_log_softmax=False
+        reuse_logits_for_grads=False
     )
+
+    return loss_value.mean()
 
 
 class PitWrapper(nn.Module):
